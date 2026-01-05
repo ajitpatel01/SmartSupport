@@ -2,8 +2,6 @@
 
 AI-SmartSupport is an AI-powered customer support ticket management system designed to automatically analyze, prioritize, and assign support tickets using modern backend engineering and AI-driven workflows.
 
-This project is inspired by the ChaiCode YouTube video series and focuses on demonstrating real-world backend architecture, event-driven systems, and AI integration.
-
 📌 Project Overview
 
 AI-SmartSupport automates the support ticket lifecycle by leveraging AI to:
