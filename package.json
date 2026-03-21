@@ -1,0 +1,38 @@
+{
+  "name": "smart-support",
+  "version": "1.0.0",
+  "description": "AI-powered customer support ticket management SaaS",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "inngest:dev": "npx inngest-cli@latest dev"
+  },
+  "keywords": [
+    "support",
+    "ai",
+    "saas",
+    "tickets"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@inngest/agent-kit": "^0.5.0",
+    "bcrypt": "^5.1.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "express-rate-limit": "^7.5.0",
+    "handlebars": "^4.7.8",
+    "inngest": "^3.31.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.12.1",
+    "morgan": "^1.10.0",
+    "nodemailer": "^8.0.3",
+    "winston": "^3.17.0",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.9"
+  }
+}

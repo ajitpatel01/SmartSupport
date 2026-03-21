@@ -1,141 +1,151 @@
-🤖 AI-SmartSupport
+# AI-SmartSupport
 
-AI-SmartSupport is an AI-powered customer support ticket management system designed to automatically analyze, prioritize, and assign support tickets using modern backend engineering and AI-driven workflows.
+AI-SmartSupport is a production-grade, AI-powered customer support ticket management SaaS. It automatically analyzes, prioritizes, and assigns support tickets using event-driven workflows and Google Gemini AI.
 
-📌 Project Overview
+## Quick Start
 
-AI-SmartSupport automates the support ticket lifecycle by leveraging AI to:
-
-Analyze ticket content intelligently
-
-Assign priority based on issue context
-
-Match tickets to the most suitable moderators using skill-based routing
-
-Generate helpful notes to speed up resolution
-
-The system is built with a scalable, event-driven backend architecture, reflecting industry-standard practices.
-
-🚀 Key Features
-🧠 AI-Powered Ticket Processing
-
-Automatic ticket categorization
-
-Smart priority assignment
-
-AI-generated helpful notes for moderators
-
-Skill extraction from ticket content
-
-👥 Smart Moderator Assignment
-
-Skill-based routing using regex matching
-
-Automatic moderator selection
-
-Admin fallback if no matching moderator is found
-
-🔐 User Management
-
-Role-based access control (User, Moderator, Admin)
-
-Moderator skill management
-
-Secure JWT-based authentication
-
-⚙️ Background & Asynchronous Processing
-
-Event-driven architecture using Inngest
-
-Non-blocking ticket processing
-
-Automated email notifications
-
-🛠️ Tech Stack
-
-Backend: Node.js, Express
-
-Database: MongoDB
-
-Authentication: JWT
-
-Background Jobs: Inngest
-
-AI Integration: Google Gemini API
-
-Email Service: Nodemailer (Mailtrap for testing)
-
-Development Tools: Nodemon
-
-🔄 System Workflow (High-Level)
-
-Ticket Creation
-
-User submits a ticket with title and description
-
-AI Analysis
-
-AI analyzes ticket content
-
-Determines priority, required skills, and helpful notes
-
-Assignment Logic
-
-System matches ticket skills with moderator skills
-
-Falls back to admin if no match is found
-
-Notification
-
-Assigned moderator receives an email notification
-
-🚀 Quick Start
+```bash
+# 1. Install dependencies
 npm install
+
+# 2. Copy environment variables and fill in secrets
+cp .env.example .env
+
+# 3. Start the Inngest dev server (separate terminal)
+npm run inngest:dev
+
+# 4. Start the application
 npm run dev
+```
 
+The API runs at `http://localhost:3000` with the Inngest dashboard at `http://localhost:8288`.
 
-The application runs as a Node.js backend service with background job processing handled by Inngest.
+## Project Structure
 
-📚 Dependencies (Core)
+```
+src/
+├── config/              # Database, env validation, logger
+├── models/              # Mongoose schemas + plugins
+├── middleware/           # Auth, RBAC, rate limiting, error handling
+├── modules/
+│   ├── auth/            # Registration, login, JWT refresh
+│   ├── tickets/         # CRUD, events, validators
+│   ├── users/           # Profile, org user listing
+│   ├── moderators/      # Smart assignment, skill management
+│   ├── notifications/   # Email + in-app + templates
+│   ├── ai/              # Gemini service, prompts, Zod schemas
+│   ├── analytics/       # Ticket + moderator stats (aggregation)
+│   ├── billing/         # Plan quota enforcement
+│   └── organizations/   # Org management, member invites
+├── inngest/             # Event-driven workflow functions
+│   └── functions/       # AI analysis, escalation, feedback
+├── utils/               # Pagination, error classes, retry logic
+├── app.js               # Express app wiring
+└── server.js            # Server bootstrap
+```
 
-express
+## Key Features
 
-mongoose
+- **AI-Powered Triage** — Gemini analyzes tickets for category, priority, required skills, and moderator guidance notes. Responses validated with Zod.
+- **Smart Assignment** — Skill-based moderator matching with regex scoring, workload-aware tie-breaking, and admin fallback.
+- **Event-Driven Workflows** — Inngest handles AI analysis on ticket creation, hourly stale ticket escalation, and post-resolution feedback surveys.
+- **Multi-Tenancy** — Organization-scoped data isolation via Mongoose plugin + middleware.
+- **RBAC** — Three-tier role system (user, moderator, admin) with route-level enforcement.
+- **JWT Auth** — Access token (15min) + refresh token (7d) rotation with reuse detection.
+- **Notifications** — Email (Mailtrap/SES) with Handlebars templates + in-app notification polling.
+- **Analytics** — MongoDB aggregation pipelines for ticket trends and moderator performance.
+- **Rate Limiting** — Global + per-org limits, tighter on AI-heavy routes.
+- **Billing Stubs** — Plan-based ticket quotas (free: 10/mo, pro: 500, enterprise: unlimited).
 
-jsonwebtoken
+## API Routes
 
-inngest
+### Auth
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/auth/register` | Register user + create/join org |
+| POST | `/api/auth/login` | Login, get token pair |
+| POST | `/api/auth/refresh` | Rotate refresh token |
+| POST | `/api/auth/logout` | Revoke refresh token |
 
-@inngest/agent-kit
+### Tickets
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| POST | `/api/tickets` | user+ | Create ticket (triggers AI workflow) |
+| GET | `/api/tickets` | user+ | List with filters + cursor pagination |
+| GET | `/api/tickets/:id` | user+ | Ticket detail + audit log |
+| PATCH | `/api/tickets/:id` | moderator+ | Update status/assignment |
+| DELETE | `/api/tickets/:id` | admin | Soft delete |
 
-nodemailer
+### Users & Moderators
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| GET | `/api/users/me` | any | Current user profile |
+| PATCH | `/api/users/me` | any | Update profile |
+| GET | `/api/users` | moderator+ | List org users |
+| GET | `/api/moderators` | moderator+ | List moderators + workload |
+| PATCH | `/api/moderators/:id/skills` | admin | Update skills |
 
-bcrypt
+### Organization
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| GET | `/api/org` | any | Org details |
+| PATCH | `/api/org` | admin | Update org settings |
+| POST | `/api/org/invite` | admin | Invite member via email |
 
-dotenv
+### Notifications & Analytics
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| GET | `/api/notifications` | any | In-app notifications |
+| PATCH | `/api/notifications/:id/read` | any | Mark as read |
+| GET | `/api/analytics/tickets` | admin | Ticket breakdown (30d) |
+| GET | `/api/analytics/moderators` | admin | Moderator performance |
 
-cors
+## Tech Stack
 
-🎯 Why This Project Matters
+| Layer | Technology |
+|-------|-----------|
+| Runtime | Node.js (ESM) |
+| Framework | Express |
+| Database | MongoDB (Mongoose) |
+| Auth | JWT (access + refresh tokens) |
+| Background Jobs | Inngest |
+| AI | Google Gemini via @inngest/agent-kit |
+| Validation | Zod |
+| Email | Nodemailer (Mailtrap dev / SES prod) |
+| Templates | Handlebars |
+| Logging | Winston + Morgan |
+| Rate Limiting | express-rate-limit |
 
-This project demonstrates:
+## Architecture Decisions & Trade-offs
 
-Real-world backend system design
+### AuditLog as a Separate Collection
+Audit logs are stored in a dedicated `auditlogs` collection instead of being embedded in the Ticket document. This avoids the 16MB BSON document limit for high-traffic tickets, enables independent querying for compliance/analytics, and allows efficient time-range scans via the compound `(ticketId, timestamp)` index. The trade-off is an extra query when fetching a ticket's full history.
 
-Practical AI integration (not just API calls)
+### Cursor-Based Pagination over Offset
+We use `_id`-based cursor pagination instead of skip/limit. This prevents page drift when new tickets are created between page loads and avoids the O(n) cost of skip on large collections. The trade-off is that clients cannot jump to arbitrary page numbers — they must paginate sequentially.
 
-Event-driven architecture with background jobs
+### Soft Delete with Query Middleware
+Tickets use a `deletedAt` timestamp rather than physical deletion. Mongoose query middleware auto-filters deleted documents, so application code never accidentally surfaces them. This preserves audit trail integrity and enables undelete. The trade-off is slightly more complex queries and the need to explicitly include `deletedAt` in filters when admins want to see deleted tickets.
 
-Clean separation of concerns (controllers, models, utils, workflows)
+### Refresh Token Rotation with Reuse Detection
+Each refresh token is single-use. When a refresh token is presented that has already been revoked, all tokens for that user are invalidated (indicating potential token theft). This adds a DB lookup per refresh but significantly improves security over long-lived tokens.
 
-Production-oriented thinking suitable for internships and entry-level backend roles
+### orgScopePlugin via Query Options (not AsyncLocalStorage)
+The org-scoping Mongoose plugin reads `orgId` from query options rather than using `AsyncLocalStorage` or `cls-hooked`. This is more explicit and avoids the complexity and performance overhead of CLS, but requires services to pass `{ orgId }` as a query option when needed.
 
-🙏 Acknowledgments
+### ESM Throughout
+The codebase uses ES Modules (`"type": "module"`) consistently. This matches the existing utility code and enables top-level `await`, tree-shaking potential, and alignment with the modern Node.js ecosystem.
 
-Inngest — Background job processing
+### Plan-Based Quota as Middleware
+Billing quota enforcement is implemented as Express middleware rather than in the service layer. This makes it easy to apply to specific routes (ticket creation) without polluting business logic. Full Stripe integration is stubbed for future implementation.
 
-Google Gemini — AI capabilities
+## Environment Variables
 
-Mailtrap — Email testing
+Copy `.env.example` to `.env` and fill in the required values. The server validates all required variables at startup and fails fast if any are missing.
 
-MongoDB — Database
+## Acknowledgments
+
+- [Inngest](https://www.inngest.com/) — Event-driven background job processing
+- [Google Gemini](https://ai.google.dev/) — AI capabilities via @inngest/agent-kit
+- [Mailtrap](https://mailtrap.io/) — Email testing in development
+- [MongoDB](https://www.mongodb.com/) — Database
