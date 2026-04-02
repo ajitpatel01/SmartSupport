@@ -27,6 +27,9 @@ const envSchema = z.object({
   AWS_SES_SECRET_KEY: z.string().optional(),
 
   EMAIL_FROM: z.string().default('support@smartsupport.io'),
+
+  /** Comma-separated origins for CORS (browser frontend). Empty = reflect request origin (dev-friendly). */
+  CORS_ORIGIN: z.string().optional(),
 });
 
 const parsed = envSchema.safeParse(process.env);

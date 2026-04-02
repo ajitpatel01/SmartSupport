@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
 import { serve } from 'inngest/express';
+import { env } from './config/env.js';
 import { morganStream } from './config/logger.js';
 import { globalLimiter, authLimiter } from './middleware/rateLimiter.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
@@ -18,8 +19,24 @@ import orgRoutes from './modules/organizations/org.routes.js';
 
 const app = express();
 
+const corsOptions = {
+  origin: (origin, callback) => {
+    const allowed = env.CORS_ORIGIN?.split(',').map((o) => o.trim()).filter(Boolean);
+    if (!allowed?.length) {
+      callback(null, true);
+      return;
+    }
+    if (!origin || allowed.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+};
+
 // ─── Global Middleware ───────────────────────────────
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(express.json({ limit: '10kb' }));
 app.use(morgan('combined', { stream: morganStream }));
 app.use(globalLimiter);

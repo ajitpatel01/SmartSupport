@@ -20,9 +20,26 @@ npm run dev
 
 The API runs at `http://localhost:3000` with the Inngest dashboard at `http://localhost:8288`.
 
+### Web app (Next.js)
+
+The SaaS dashboard and marketing site live in [`web/`](web/).
+
+```bash
+cd web
+cp .env.local.example .env.local
+# Ensure NEXT_PUBLIC_API_URL points at the API (default http://localhost:3000)
+npm install
+npm run dev
+```
+
+The UI defaults to **port 3001** (`http://localhost:3001`). Run the API on **3000** and the web app on **3001** in separate terminals.
+
+**Production CORS:** set `CORS_ORIGIN` in the API `.env` to your deployed web origin (comma-separated if multiple), e.g. `https://app.example.com`. Leave it unset in local dev to allow any origin.
+
 ## Architecture Overview
 
 ```
+web/                   # Next.js 15 — marketing + authenticated app (TanStack Query, shadcn/ui)
 src/
 ├── config/              # Database, env validation, structured logging
 ├── models/              # Mongoose schemas + tenant-scoping plugins
