@@ -2,6 +2,10 @@
 
 AI-SmartSupport is a multi-tenant, AI-powered helpdesk platform that automates ticket triage, intelligent routing, and agent workload balancing. Built on an event-driven architecture with Google Gemini for NLP-based classification and prioritization.
 
+## Deployment
+
+Production setup (MongoDB, API, Inngest, Next.js, env vars, CORS) is documented in **[DEPLOY.md](DEPLOY.md)**.
+
 ## Quick Start
 
 ```bash
