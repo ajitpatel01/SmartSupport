@@ -16,6 +16,7 @@ import moderatorRoutes from './modules/moderators/moderator.routes.js';
 import notificationRoutes from './modules/notifications/notification.routes.js';
 import analyticsRoutes from './modules/analytics/analytics.routes.js';
 import orgRoutes from './modules/organizations/org.routes.js';
+import billingRoutes from './modules/billing/billing.routes.js';
 
 const app = express();
 
@@ -52,6 +53,7 @@ app.use('/api/moderators', moderatorRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/org', orgRoutes);
+app.use('/api/billing', billingRoutes);
 
 // ─── Health Check ────────────────────────────────────
 app.get('/health', (_req, res) => {

@@ -14,7 +14,10 @@ cp .env.example .env
 # 3. Start the Inngest dev server (separate terminal)
 npm run inngest:dev
 
-# 4. Start the application
+# 4. (Optional) Seed demo org + users + tickets in MongoDB
+npm run seed
+
+# 5. Start the application
 npm run dev
 ```
 
@@ -34,12 +37,35 @@ npm run dev
 
 The UI defaults to **port 3001** (`http://localhost:3001`). Run the API on **3000** and the web app on **3001** in separate terminals.
 
+### Android app (Kotlin / Jetpack Compose)
+
+An optional native client lives in [`android/`](android/). It uses the same backend-oriented patterns (ViewModel, repository, Firebase Crashlytics/Analytics, release R8) as a production baseline. Build with JDK 17+ and the Android SDK:
+
+```bash
+cd android
+./gradlew :app:assembleDebug
+```
+
+Replace [`android/app/google-services.json`](android/app/google-services.json) with the file from the [Firebase Console](https://console.firebase.google.com) for package `com.smartsupport.app` if you want real Crashlytics and Analytics. Optional API base URL: copy [`android/local.properties.example`](android/local.properties.example) to `local.properties` and set `API_BASE_URL`. More detail: [`android/BUILD.txt`](android/BUILD.txt) and [`android/PERF.md`](android/PERF.md).
+
+### Demo mode (UI only, no API)
+
+Set in `web/.env.local`:
+
+```bash
+NEXT_PUBLIC_DEMO_MODE=true
+```
+
+Restart the Next.js dev server. Use **View demo** on the marketing home or login page to open the dashboard with in-memory sample data (tickets, analytics, notifications). Changes persist for the browser session only and are not sent to the API. Omit this flag for normal development against the Express backend.
+
 **Production CORS:** set `CORS_ORIGIN` in the API `.env` to your deployed web origin (comma-separated if multiple), e.g. `https://app.example.com`. Leave it unset in local dev to allow any origin.
 
 ## Architecture Overview
 
 ```
+android/               # Kotlin + Compose client (Firebase, OkHttp/Retrofit) — optional
 web/                   # Next.js 15 — marketing + authenticated app (TanStack Query, shadcn/ui)
+scripts/               # e.g. MongoDB seed script (npm run seed)
 src/
 ├── config/              # Database, env validation, structured logging
 ├── models/              # Mongoose schemas + tenant-scoping plugins
@@ -52,7 +78,7 @@ src/
 │   ├── notifications/   # Transactional email + in-app notification delivery
 │   ├── ai/              # Gemini integration, prompt engineering, schema-validated responses
 │   ├── analytics/       # Aggregation pipelines — ticket KPIs + agent performance
-│   ├── billing/         # Plan-tier quota enforcement (free / pro / enterprise)
+│   ├── billing/         # Quota middleware, usage summary API, checkout placeholder
 │   └── organizations/   # Tenant provisioning, member invitations, org settings
 ├── inngest/             # Event-driven workflow orchestration
 │   └── functions/       # AI triage, SLA escalation, CSAT collection
@@ -105,7 +131,7 @@ Plan-tier limits enforced via middleware before ticket creation:
 | Pro | 500 |
 | Enterprise | Unlimited |
 
-Stripe integration is stubbed for metered billing activation.
+Billing: monthly quotas are enforced in middleware; `GET /api/billing/summary` exposes plan and current-month ticket usage for the dashboard. Stripe Checkout is not wired—`POST /api/billing/checkout` returns a placeholder message for future activation.
 
 ## API Reference
 
@@ -150,10 +176,17 @@ Stripe integration is stubbed for metered billing activation.
 | GET | `/api/analytics/tickets` | Admin | Ticket KPI dashboard (30-day) |
 | GET | `/api/analytics/moderators` | Admin | Agent performance metrics |
 
+### Billing (read-only summary + placeholder checkout)
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| GET | `/api/billing/summary` | Any | Plan tier, monthly ticket count vs quota |
+| POST | `/api/billing/checkout` | Any | Placeholder until Stripe is enabled |
+
 ## Tech Stack
 
 | Layer | Technology |
 |-------|-----------|
+| Mobile (optional) | Kotlin, Jetpack Compose, Firebase (Crashlytics/Analytics), OkHttp/Retrofit |
 | Runtime | Node.js (ESM) |
 | Framework | Express |
 | Database | MongoDB (Mongoose ODM) |
@@ -185,6 +218,11 @@ The org-scoping Mongoose plugin reads `orgId` from query options rather than rel
 
 ### Quota Enforcement as Middleware
 Plan-tier limits are enforced in Express middleware rather than in the service layer, keeping billing concerns decoupled from business logic. Only applied to ticket-creation routes to minimize overhead.
+
+## Troubleshooting
+
+- **HTTP 429 on `/api/tickets`, `/api/org`, etc.** — The API uses `express-rate-limit` (global per IP + a stricter per-organization limit on **POST /api/tickets** because it triggers AI triage). Limits are **much higher in `NODE_ENV=development`** than in production. If you still hit 429 after many requests, wait for the 15-minute window to reset or restart the dev server (limits use an in-memory store by default).
+- **Invitation or notification email not received** — Ensure `MAILTRAP_SMTP_USER` and `MAILTRAP_SMTP_PASS` are set to a valid [Mailtrap](https://mailtrap.io/) inbox (see `.env.example`). If SMTP fails, `POST /api/org/invite` returns **503** with a hint (the invited user is not left half-created). Check server logs for `Email failed` or `Invite email failed`.
 
 ## Environment Variables
 

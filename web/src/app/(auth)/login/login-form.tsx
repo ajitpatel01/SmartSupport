@@ -13,6 +13,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ApiError } from "@/lib/api";
 import { useAuth } from "@/contexts/auth-context";
+import { isDemoMode } from "@/lib/demo/config";
+import { enterDemoSession } from "@/lib/demo/session";
 
 const schema = z.object({
   email: z.string().email(),
@@ -53,9 +55,9 @@ export function LoginForm() {
   }
 
   return (
-    <Card className="w-full max-w-md">
+    <Card className="auth-glass-card w-full max-w-md rounded-2xl border border-white/10 shadow-[var(--glow-primary)]">
       <CardHeader>
-        <CardTitle>Log in</CardTitle>
+        <CardTitle className="text-xl tracking-tight">Log in</CardTitle>
         <CardDescription>Access your organization workspace.</CardDescription>
       </CardHeader>
       <CardContent>
@@ -83,6 +85,19 @@ export function LoginForm() {
             {pending ? "Signing in…" : "Sign in"}
           </Button>
         </form>
+        {isDemoMode() && (
+          <Button
+            type="button"
+            variant="secondary"
+            className="mt-3 w-full"
+            onClick={() => {
+              enterDemoSession();
+              router.push(from.startsWith("/") ? from : "/app");
+            }}
+          >
+            View demo (no login)
+          </Button>
+        )}
         <p className="text-muted-foreground mt-6 text-center text-sm">
           No account?{" "}
           <Link href="/register" className="text-primary font-medium underline-offset-4 hover:underline">

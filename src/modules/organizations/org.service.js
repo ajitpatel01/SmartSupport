@@ -1,6 +1,7 @@
 import crypto from 'crypto';
 import Organization from '../../models/Organization.js';
 import User from '../../models/User.js';
+import logger from '../../config/logger.js';
 import { ApiError } from '../../utils/ApiError.js';
 import { sendMail } from '../notifications/notification.service.js';
 
@@ -15,6 +16,16 @@ export async function updateOrg(orgId, updates) {
   const filtered = {};
   for (const key of allowed) {
     if (updates[key] !== undefined) filtered[key] = updates[key];
+  }
+
+  if (filtered.webhookUrl !== undefined && filtered.webhookUrl !== null && String(filtered.webhookUrl).trim() !== '') {
+    try {
+      // eslint-disable-next-line no-new
+      new URL(String(filtered.webhookUrl).trim());
+    } catch {
+      throw ApiError.badRequest('Invalid webhook URL');
+    }
+    filtered.webhookUrl = String(filtered.webhookUrl).trim();
   }
 
   const org = await Organization.findByIdAndUpdate(orgId, filtered, { new: true, runValidators: true });
@@ -44,11 +55,19 @@ export async function inviteMember(orgId, email, role = 'user') {
     orgId,
   });
 
-  await sendMail(
-    email,
-    `You've been invited to ${org.name} on SmartSupport`,
-    `You've been invited to join ${org.name}.\n\nYour temporary password: ${inviteToken}\n\nPlease log in and change your password.`,
-  );
+  try {
+    await sendMail(
+      email,
+      `You've been invited to ${org.name} on SmartSupport`,
+      `You've been invited to join ${org.name}.\n\nYour temporary password: ${inviteToken}\n\nPlease log in and change your password.`,
+    );
+  } catch (err) {
+    await User.deleteOne({ _id: user._id });
+    logger.error(`Invite email failed for ${email}, user rolled back: ${err.message}`);
+    throw ApiError.serviceUnavailable(
+      'Invitation email could not be sent. Check MAILTRAP_SMTP_USER and MAILTRAP_SMTP_PASS in your .env (Mailtrap inbox).',
+    );
+  }
 
   return { userId: user._id, email, role };
 }

@@ -84,9 +84,9 @@ export default function RegisterPage() {
   }
 
   return (
-    <Card className="w-full max-w-md">
+    <Card className="auth-glass-card w-full max-w-md rounded-2xl border border-white/10 shadow-[var(--glow-primary)]">
       <CardHeader>
-        <CardTitle>Create account</CardTitle>
+        <CardTitle className="text-xl tracking-tight">Create account</CardTitle>
         <CardDescription>Start a new org or join with an invite ID.</CardDescription>
       </CardHeader>
       <CardContent>
@@ -149,7 +149,17 @@ export default function RegisterPage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="j-org">Organization ID</Label>
-                <Input id="j-org" placeholder="MongoDB ObjectId" {...formJoin.register("orgId")} />
+                <Input
+                  id="j-org"
+                  placeholder="24-character ID from your admin"
+                  className="font-mono text-sm"
+                  {...formJoin.register("orgId")}
+                />
+                <p className="text-muted-foreground text-xs">
+                  Ask an org admin for this value (Settings → Organization). It is the same
+                  MongoDB <code className="bg-muted rounded px-1 py-0.5 text-[11px]">ObjectId</code>{" "}
+                  string used by the API.
+                </p>
                 {formJoin.formState.errors.orgId && (
                   <p className="text-destructive text-sm">
                     {formJoin.formState.errors.orgId.message}

@@ -23,6 +23,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardContent } from "@/components/ui/card";
 import { fetchTicketsQuery } from "@/lib/api-resources";
 import type { TicketStatus, TicketPriority } from "@/lib/types";
 
@@ -68,12 +69,12 @@ export default function TicketsListPage() {
   function statusBadge(s: TicketStatus) {
     const variant =
       s === "open"
-        ? "default"
+        ? "success"
         : s === "in_progress"
-          ? "secondary"
+          ? "default"
           : s === "resolved"
             ? "outline"
-            : "secondary";
+            : "muted";
     return (
       <Badge variant={variant} className="capitalize">
         {s.replace("_", " ")}
@@ -88,29 +89,32 @@ export default function TicketsListPage() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div className="mx-auto max-w-6xl space-y-6 sm:space-y-8">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Tickets</h1>
-          <p className="text-muted-foreground text-sm">Cursor-paginated, org-scoped.</p>
+          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Tickets</h1>
+          <p className="text-muted-foreground mt-1 text-sm">Cursor-paginated, org-scoped.</p>
         </div>
         <Link
           href="/app/tickets/new"
-          className={cn(buttonVariants(), "inline-flex items-center")}
+          className={cn(
+            buttonVariants(),
+            "inline-flex h-11 min-h-[44px] shrink-0 items-center justify-center rounded-xl px-4 transition-transform duration-200 hover:scale-[1.02] active:scale-[0.99] sm:h-9",
+          )}
         >
           <Plus className="mr-2 h-4 w-4" />
           New ticket
         </Link>
       </div>
 
-      <div className="flex flex-wrap gap-3">
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
         <Select
           value={status}
           onValueChange={(v) => {
             if (v) setStatus(v);
           }}
         >
-          <SelectTrigger className="w-[160px]">
+          <SelectTrigger className="h-11 w-full rounded-xl sm:h-9 sm:w-[min(100%,11rem)]">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>
@@ -127,7 +131,7 @@ export default function TicketsListPage() {
             if (v) setPriority(v);
           }}
         >
-          <SelectTrigger className="w-[160px]">
+          <SelectTrigger className="h-11 w-full rounded-xl sm:h-9 sm:w-[min(100%,11rem)]">
             <SelectValue placeholder="Priority" />
           </SelectTrigger>
           <SelectContent>
@@ -140,57 +144,94 @@ export default function TicketsListPage() {
         </Select>
       </div>
 
-      <div className="rounded-lg border">
-        {isLoading ? (
-          <div className="space-y-3 p-6">
-            <Skeleton className="h-8 w-full" />
-            <Skeleton className="h-8 w-full" />
-            <Skeleton className="h-8 w-full" />
-          </div>
-        ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Title</TableHead>
-                <TableHead className="hidden sm:table-cell">Status</TableHead>
-                <TableHead className="hidden md:table-cell">Priority</TableHead>
-                <TableHead className="hidden lg:table-cell">Updated</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {rows.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={4} className="text-muted-foreground py-10 text-center">
-                    No tickets yet.{" "}
-                    <Link href="/app/tickets/new" className="text-primary underline">
-                      Create one
-                    </Link>
-                    .
-                  </TableCell>
+      {isLoading ? (
+        <div className="space-y-3 lg:hidden">
+          <Skeleton className="h-28 w-full rounded-2xl" />
+          <Skeleton className="h-28 w-full rounded-2xl" />
+        </div>
+      ) : null}
+      {isLoading ? (
+        <div className="hidden space-y-3 p-6 lg:block">
+          <Skeleton className="h-8 w-full rounded-lg" />
+          <Skeleton className="h-8 w-full rounded-lg" />
+          <Skeleton className="h-8 w-full rounded-lg" />
+        </div>
+      ) : null}
+
+      {!isLoading && rows.length === 0 ? (
+        <Card className="border-border/60">
+          <CardContent className="text-muted-foreground py-12 text-center text-sm">
+            No tickets yet.{" "}
+            <Link href="/app/tickets/new" className="text-primary font-medium underline-offset-4 hover:underline">
+              Create one
+            </Link>
+            .
+          </CardContent>
+        </Card>
+      ) : null}
+
+      {!isLoading && rows.length > 0 ? (
+        <div className="lg:hidden">
+          <ul className="space-y-3">
+            {rows.map((t) => (
+              <li key={t._id}>
+                <Link href={`/app/tickets/${t._id}`} className="block">
+                  <Card className="border-border/60 transition-colors duration-200 hover:border-primary/25">
+                    <CardContent className="space-y-3 p-4">
+                      <p className="text-foreground font-medium leading-snug">{t.title}</p>
+                      <div className="flex flex-wrap items-center gap-2">
+                        {statusBadge(t.status)}
+                        <span className="text-muted-foreground text-xs capitalize">
+                          {t.priority} priority
+                        </span>
+                      </div>
+                      <p className="text-muted-foreground text-xs">
+                        Updated {new Date(t.updatedAt).toLocaleString()}
+                      </p>
+                    </CardContent>
+                  </Card>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+
+      {!isLoading && rows.length > 0 ? (
+        <div className="relative hidden min-w-0 lg:block">
+          <div className="relative overflow-x-auto rounded-2xl border border-border/80 shadow-inner">
+            <Table className="min-w-[640px]">
+              <TableHeader>
+                <TableRow className="border-border/80 hover:bg-transparent">
+                  <TableHead className="font-semibold">Title</TableHead>
+                  <TableHead className="font-semibold">Status</TableHead>
+                  <TableHead className="font-semibold">Priority</TableHead>
+                  <TableHead className="text-muted-foreground font-semibold">Updated</TableHead>
                 </TableRow>
-              ) : (
-                rows.map((t) => (
-                  <TableRow key={t._id}>
+              </TableHeader>
+              <TableBody>
+                {rows.map((t) => (
+                  <TableRow key={t._id} className="border-border/60">
                     <TableCell>
                       <Link
                         href={`/app/tickets/${t._id}`}
-                        className="font-medium hover:underline"
+                        className="text-foreground font-medium transition-colors hover:text-primary hover:underline"
                       >
                         {t.title}
                       </Link>
                     </TableCell>
-                    <TableCell className="hidden sm:table-cell">{statusBadge(t.status)}</TableCell>
-                    <TableCell className="hidden md:table-cell">{priorityBadge(t.priority)}</TableCell>
-                    <TableCell className="text-muted-foreground hidden text-sm lg:table-cell">
+                    <TableCell>{statusBadge(t.status)}</TableCell>
+                    <TableCell>{priorityBadge(t.priority)}</TableCell>
+                    <TableCell className="text-muted-foreground text-sm">
                       {new Date(t.updatedAt).toLocaleString()}
                     </TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        )}
-      </div>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
+      ) : null}
 
       {hasNextPage && (
         <Button

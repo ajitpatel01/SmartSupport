@@ -24,17 +24,17 @@ export default function AppHomePage() {
   });
 
   return (
-    <div className="mx-auto max-w-4xl space-y-8">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">
+    <div className="mx-auto max-w-4xl space-y-8 sm:space-y-10">
+      <div className="animate-fade-up">
+        <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
           Welcome back{user?.name ? `, ${user.name.split(" ")[0]}` : ""}
         </h1>
-        <p className="text-muted-foreground mt-1">
+        <p className="text-muted-foreground mt-2 text-sm sm:text-base">
           {org?.name ?? "Your organization"} · {org?.plan ?? "—"} plan
         </p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="animate-fade-up animate-delay-100 grid gap-4 sm:gap-5 md:grid-cols-2">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-lg">
@@ -83,7 +83,7 @@ export default function AppHomePage() {
               <Link
                 key={t._id}
                 href={`/app/tickets/${t._id}`}
-                className="hover:bg-muted/60 flex items-center justify-between rounded-lg border p-3 transition-colors"
+                className="hover:bg-muted/60 hover:border-primary/20 flex min-h-[44px] items-center justify-between rounded-xl border border-border/80 p-3 transition-all duration-200"
               >
                 <span className="font-medium">{t.title}</span>
                 <span className="text-muted-foreground text-xs capitalize">{t.status.replace("_", " ")}</span>

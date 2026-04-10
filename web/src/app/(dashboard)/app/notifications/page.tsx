@@ -33,10 +33,10 @@ export default function NotificationsPage() {
   });
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6">
+    <div className="mx-auto max-w-2xl space-y-6 sm:space-y-8">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Notifications</h1>
-        <p className="text-muted-foreground text-sm">
+        <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Notifications</h1>
+        <p className="text-muted-foreground mt-1 text-sm">
           Polled every 30s—read state syncs with the API.
         </p>
       </div>
@@ -57,7 +57,7 @@ export default function NotificationsPage() {
             data?.map((n) => (
               <div
                 key={n._id}
-                className={`flex flex-col gap-2 rounded-lg border p-4 sm:flex-row sm:items-start sm:justify-between ${n.read ? "opacity-70" : ""}`}
+                className={`border-border/80 flex flex-col gap-3 rounded-2xl border bg-card/40 p-4 transition-colors sm:flex-row sm:items-start sm:justify-between ${n.read ? "opacity-70" : "ring-1 ring-primary/10"}`}
               >
                 <div>
                   <p className="font-medium capitalize">{n.type.replace("_", " ")}</p>

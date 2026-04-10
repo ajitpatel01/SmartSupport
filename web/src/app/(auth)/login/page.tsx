@@ -7,7 +7,7 @@ export default function LoginPage() {
     <Suspense
       fallback={
         <div className="w-full max-w-md space-y-4">
-          <Skeleton className="h-48 w-full rounded-xl" />
+          <Skeleton className="h-48 w-full rounded-2xl border border-white/10" />
         </div>
       }
     >

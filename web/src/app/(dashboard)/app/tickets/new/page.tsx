@@ -42,13 +42,16 @@ export default function NewTicketPage() {
   });
 
   return (
-    <div className="mx-auto max-w-xl space-y-6">
+    <div className="mx-auto max-w-xl space-y-6 sm:space-y-8">
       <div>
-        <Link href="/app/tickets" className="text-muted-foreground text-sm hover:underline">
+        <Link
+          href="/app/tickets"
+          className="text-muted-foreground hover:text-foreground text-sm transition-colors hover:underline"
+        >
           ← Back to tickets
         </Link>
-        <h1 className="mt-2 text-2xl font-semibold tracking-tight">New ticket</h1>
-        <p className="text-muted-foreground text-sm">
+        <h1 className="mt-3 text-2xl font-semibold tracking-tight sm:text-3xl">New ticket</h1>
+        <p className="text-muted-foreground mt-2 text-sm">
           AI triage runs after submit—be specific in the description for best routing.
         </p>
       </div>

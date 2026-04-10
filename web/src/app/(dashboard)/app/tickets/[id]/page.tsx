@@ -40,7 +40,14 @@ import {
   updateTicket,
 } from "@/lib/api-resources";
 import { useAuth } from "@/contexts/auth-context";
-import type { Ticket, TicketUserRef } from "@/lib/types";
+import type { Ticket, TicketStatus, TicketUserRef } from "@/lib/types";
+
+function statusBadgeVariant(s: TicketStatus): "success" | "default" | "outline" | "muted" {
+  if (s === "open") return "success";
+  if (s === "in_progress") return "default";
+  if (s === "resolved") return "outline";
+  return "muted";
+}
 
 function nameOf(u: Ticket["createdBy"]): string {
   if (typeof u === "object" && u && "name" in u) return u.name;
@@ -75,6 +82,11 @@ export default function TicketDetailPage() {
 
   const form = useForm<UpdateForm>({
     resolver: zodResolver(updateSchema),
+    defaultValues: {
+      status: "open",
+      priority: "medium",
+      assignedTo: undefined,
+    },
     values: ticket
       ? {
           status: ticket.status,
@@ -115,14 +127,14 @@ export default function TicketDetailPage() {
   if (isLoading || !ticket) {
     return (
       <div className="mx-auto max-w-3xl space-y-4">
-        <Skeleton className="h-8 w-2/3" />
-        <Skeleton className="h-40 w-full" />
+        <Skeleton className="h-9 w-2/3 max-w-md rounded-xl" />
+        <Skeleton className="h-48 w-full rounded-2xl" />
       </div>
     );
   }
 
   return (
-    <div className="mx-auto max-w-3xl space-y-8">
+    <div className="mx-auto max-w-3xl space-y-8 sm:space-y-10">
       <div>
         <Link href="/app/tickets" className="text-muted-foreground text-sm hover:underline">
           ← Tickets
@@ -136,7 +148,9 @@ export default function TicketDetailPage() {
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Badge className="capitalize">{ticket.status.replace("_", " ")}</Badge>
+            <Badge variant={statusBadgeVariant(ticket.status)} className="capitalize">
+              {ticket.status.replace("_", " ")}
+            </Badge>
             <Badge variant="outline" className="capitalize">
               {ticket.priority}
             </Badge>
@@ -199,7 +213,7 @@ export default function TicketDetailPage() {
               <div className="space-y-2">
                 <Label>Status</Label>
                 <Select
-                  value={form.watch("status")}
+                  value={form.watch("status") ?? ticket.status}
                   onValueChange={(v) =>
                     form.setValue("status", v as UpdateForm["status"])
                   }
@@ -218,7 +232,7 @@ export default function TicketDetailPage() {
               <div className="space-y-2">
                 <Label>Priority</Label>
                 <Select
-                  value={form.watch("priority")}
+                  value={form.watch("priority") ?? ticket.priority}
                   onValueChange={(v) =>
                     form.setValue("priority", v as UpdateForm["priority"])
                   }
@@ -237,7 +251,13 @@ export default function TicketDetailPage() {
               <div className="space-y-2 sm:col-span-2">
                 <Label>Assign to</Label>
                 <Select
-                  value={form.watch("assignedTo") || "none"}
+                  value={
+                    form.watch("assignedTo") ||
+                    (typeof ticket.assignedTo === "object" && ticket.assignedTo
+                      ? ticket.assignedTo._id
+                      : (ticket.assignedTo as string | undefined)) ||
+                    "none"
+                  }
                   onValueChange={(v) =>
                     form.setValue(
                       "assignedTo",

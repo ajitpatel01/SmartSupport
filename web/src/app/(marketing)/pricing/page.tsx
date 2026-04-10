@@ -45,20 +45,27 @@ const tiers = [
 
 export default function PricingPage() {
   return (
-    <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-      <div className="text-center">
-        <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Pricing</h1>
-        <p className="text-muted-foreground mx-auto mt-3 max-w-xl">
-          Start on the free tier and move up as volume grows. Stripe metered billing is
-          on the roadmap—today quotas are enforced server-side per plan.
-        </p>
-      </div>
-      <div className="mt-12 grid gap-6 lg:grid-cols-3">
+    <div className="relative">
+      <div
+        className="pointer-events-none absolute inset-x-0 top-0 h-48 bg-[radial-gradient(80%_100%_at_50%_0%,oklch(0.32_0.07_158/0.25)_0%,transparent_70%)]"
+        aria-hidden
+      />
+      <div className="relative mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
+        <div className="animate-fade-up text-center">
+          <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Pricing</h1>
+          <p className="text-muted-foreground mx-auto mt-4 max-w-xl text-base leading-relaxed">
+            Start on the free tier and move up as volume grows. Stripe metered billing is on the
+            roadmap—today quotas are enforced server-side per plan.
+          </p>
+        </div>
+        <div className="mt-12 grid gap-6 sm:mt-16 lg:grid-cols-3">
         {tiers.map((tier) => (
           <Card
             key={tier.name}
             className={
-              tier.highlight ? "border-primary shadow-md ring-1 ring-primary/20" : ""
+              tier.highlight
+                ? "border-primary/40 shadow-[var(--glow-primary)] ring-1 ring-primary/25"
+                : "border-border/60"
             }
           >
             <CardHeader>
@@ -90,6 +97,7 @@ export default function PricingPage() {
             </CardFooter>
           </Card>
         ))}
+        </div>
       </div>
     </div>
   );

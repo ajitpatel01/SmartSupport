@@ -80,10 +80,10 @@ export default function ModeratorsPage() {
   }
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6">
+    <div className="mx-auto max-w-5xl space-y-6 sm:space-y-8">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Team</h1>
-        <p className="text-muted-foreground text-sm">
+        <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Team</h1>
+        <p className="text-muted-foreground mt-1 text-sm">
           Moderators and open workload—used for skill-based routing.
         </p>
       </div>
@@ -93,11 +93,12 @@ export default function ModeratorsPage() {
           <CardTitle>Moderators</CardTitle>
           <CardDescription>Open tickets counts drive tie-breaking when skills match.</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="min-w-0">
           {isLoading ? (
             <p className="text-muted-foreground text-sm">Loading…</p>
           ) : (
-            <Table>
+            <div className="overflow-x-auto rounded-xl border border-border/80">
+              <Table className="min-w-[640px]">
               <TableHeader>
                 <TableRow>
                   <TableHead>Name</TableHead>
@@ -143,6 +144,7 @@ export default function ModeratorsPage() {
                 )}
               </TableBody>
             </Table>
+            </div>
           )}
         </CardContent>
       </Card>

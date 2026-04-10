@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">SmartSupport</string>
+    <string name="home_title">Tickets</string>
+    <string name="loading">Loading…</string>
+    <string name="retry">Retry</string>
+    <string name="error_generic">Something went wrong.</string>
+    <string name="error_no_network">No internet connection.</string>
+    <string name="empty_posts">No items yet.</string>
+    <string name="filter_label">Search</string>
+    <string name="no_matches">No matching items.</string>
+    <string name="privacy_policy_url">https://example.com/privacy</string>
+    <string name="permission_internet_rationale">Internet access loads your support data.</string>
+</resources>

@@ -33,6 +33,7 @@ import {
 } from "@/components/ui/table";
 import { ApiError } from "@/lib/api";
 import {
+  fetchBillingSummary,
   fetchOrg,
   fetchProfile,
   fetchUsers,
@@ -66,6 +67,12 @@ export default function SettingsPage() {
     queryKey: ["users"],
     queryFn: fetchUsers,
     enabled: hasMinRole("moderator"),
+  });
+
+  const billingQ = useQuery({
+    queryKey: ["billing", "summary"],
+    queryFn: fetchBillingSummary,
+    enabled: hasMinRole("admin"),
   });
 
   const profileForm = useForm<z.infer<typeof profileSchema>>({
@@ -133,10 +140,10 @@ export default function SettingsPage() {
   });
 
   return (
-    <div className="mx-auto max-w-3xl space-y-10">
+    <div className="mx-auto max-w-3xl space-y-8 sm:space-y-10">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Settings</h1>
-        <p className="text-muted-foreground text-sm">Profile, organization, and members.</p>
+        <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Settings</h1>
+        <p className="text-muted-foreground mt-1 text-sm">Profile, organization, and members.</p>
       </div>
 
       <Card>
@@ -159,6 +166,46 @@ export default function SettingsPage() {
           </form>
         </CardContent>
       </Card>
+
+      {hasMinRole("admin") && billingQ.data && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Plan and usage</CardTitle>
+            <CardDescription>
+              Monthly ticket quota for your current plan (same window as server enforcement).
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <span className="text-muted-foreground text-sm capitalize">Plan</span>
+              <span className="font-medium">{billingQ.data.plan}</span>
+            </div>
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <span className="text-muted-foreground text-sm">Tickets this month</span>
+              <span className="tabular-nums font-medium">
+                {billingQ.data.ticketsThisMonth}
+                {billingQ.data.monthlyTicketLimit != null
+                  ? ` / ${billingQ.data.monthlyTicketLimit}`
+                  : " (unlimited)"}
+              </span>
+            </div>
+            {billingQ.data.percentUsed != null && (
+              <div className="space-y-1">
+                <div className="flex justify-between text-xs">
+                  <span className="text-muted-foreground">Quota used</span>
+                  <span className="tabular-nums">{billingQ.data.percentUsed}%</span>
+                </div>
+                <div className="bg-muted h-2 overflow-hidden rounded-full">
+                  <div
+                    className="bg-primary h-full rounded-full transition-all"
+                    style={{ width: `${billingQ.data.percentUsed}%` }}
+                  />
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {hasMinRole("admin") && (
         <Card>
@@ -250,25 +297,27 @@ export default function SettingsPage() {
             <CardTitle>Team directory</CardTitle>
             <CardDescription>All users in this organization.</CardDescription>
           </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Role</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {usersQ.data?.map((u) => (
-                  <TableRow key={u._id}>
-                    <TableCell className="font-medium">{u.name}</TableCell>
-                    <TableCell className="text-muted-foreground text-sm">{u.email}</TableCell>
-                    <TableCell className="capitalize">{u.role}</TableCell>
+          <CardContent className="min-w-0">
+            <div className="overflow-x-auto rounded-xl border border-border/80">
+              <Table className="min-w-[520px]">
+                <TableHeader>
+                  <TableRow className="border-border/60 hover:bg-transparent">
+                    <TableHead>Name</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Role</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {usersQ.data?.map((u) => (
+                    <TableRow key={u._id} className="border-border/60">
+                      <TableCell className="font-medium">{u.name}</TableCell>
+                      <TableCell className="text-muted-foreground text-sm">{u.email}</TableCell>
+                      <TableCell className="capitalize">{u.role}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           </CardContent>
         </Card>
       )}

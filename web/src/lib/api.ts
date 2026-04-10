@@ -1,4 +1,5 @@
 import { jwtDecode } from "jwt-decode";
+import { isDemoMode } from "./demo/config";
 import type { AuthUser, Paginated } from "./types";
 
 const STORAGE_KEY = "smartsupport_auth_v1";
@@ -58,6 +59,8 @@ export function clearSession() {
 let refreshInFlight: Promise<void> | null = null;
 
 export async function refreshAccessToken(): Promise<void> {
+  if (isDemoMode()) return;
+
   if (refreshInFlight) return refreshInFlight;
 
   refreshInFlight = (async () => {

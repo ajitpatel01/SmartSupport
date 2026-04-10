@@ -80,16 +80,47 @@ export async function createInAppNotification(userId, type, payload) {
   return Notification.create({ userId, type, channel: 'in_app', payload });
 }
 
-// ─── Webhook (stub) ──────────────────────────────────
+// ─── Org outbound webhook ──────────────────────────────
+
+const WEBHOOK_TIMEOUT_MS = 8000;
 
 async function fireWebhook(orgId, eventType, payload) {
   try {
     const org = await Organization.findById(orgId);
     if (!org?.webhookUrl) return;
-    // TODO: POST to org.webhookUrl with payload
-    logger.info(`Webhook stub: would POST ${eventType} to ${org.webhookUrl}`);
+
+    const url = String(org.webhookUrl).trim();
+    if (!url) return;
+
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), WEBHOOK_TIMEOUT_MS);
+
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-SmartSupport-Event': eventType,
+        },
+        body: JSON.stringify({
+          event: eventType,
+          orgId: String(orgId),
+          at: new Date().toISOString(),
+          data: payload,
+        }),
+        signal: controller.signal,
+      });
+
+      if (!res.ok) {
+        logger.warn(`Webhook ${eventType} HTTP ${res.status} for org ${orgId}`);
+      } else {
+        logger.info(`Webhook ${eventType} delivered to org ${orgId}`);
+      }
+    } finally {
+      clearTimeout(timer);
+    }
   } catch (err) {
-    logger.error(`Webhook failed for org ${orgId}: ${err.message}`);
+    logger.error(`Webhook failed for org ${orgId} (${eventType}): ${err.message}`);
   }
 }
 

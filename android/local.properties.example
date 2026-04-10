@@ -1,0 +1,5 @@
+# Copy to local.properties (gitignored). Do not commit secrets.
+# sdk.dir is set automatically by Android Studio on Mac/Windows.
+
+## Optional: override API base (default is jsonplaceholder for demo)
+# API_BASE_URL=https://your-api.example.com/

@@ -1,0 +1,6 @@
+Build (requires JDK 17+ and Android SDK):
+  cd android && ./gradlew :app:assembleDebug
+  ./gradlew :app:assembleRelease   # test R8 + Crashlytics mapping
+
+Replace app/google-services.json with the file from Firebase Console for your package (com.smartsupport.app).
+Optional: copy local.properties.example to local.properties and set API_BASE_URL or sdk.dir.
